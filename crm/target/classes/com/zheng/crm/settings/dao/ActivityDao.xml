@@ -1,0 +1,218 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.zheng.crm.settings.dao.ActivityDao">
+
+    <select id="getActivityListByName" resultType="Activity">
+        select
+
+        a.id,
+        a.name,
+        a.startDate,
+        a.endDate,
+        u.name as owner
+
+        from tbl_activity a
+        join tbl_user u
+        on a.owner=u.id
+
+        where a.name like '%' #{aname} '%'
+     </select>
+    <select id="getActivityListByNameAndNotByClueId" resultType="Activity">
+        select
+
+        a.id,
+        a.name,
+        a.startDate,
+        a.endDate,
+        u.name as owner
+
+        from tbl_activity a
+        join tbl_user u
+        on a.owner=u.id
+
+        where a.name like '%' #{aname} '%' and a.id not in(
+
+          select
+
+          activityId
+
+          from tbl_clue_activity_relation
+
+          where clueId=#{clueId}
+
+        )
+     </select>
+    <select id="getActivityListByClueId" resultType="Activity">
+       select
+
+        car.id as id,
+        a.name,
+        a.startDate,
+        a.endDate,
+        u.name as owner
+
+        from tbl_activity a
+        join tbl_user u
+        on a.owner=u.id
+        join tbl_clue_activity_relation car
+        on a.id=car.activityId
+
+        where car.clueId=#{clueId}
+    </select>
+    <insert id="save">
+        insert into tbl_activity(
+
+            id,
+            owner,
+            name,
+            startDate,
+            endDate,
+            cost,
+            description,
+            createTime,
+            createBy
+
+
+        )
+
+        values(
+
+            #{id},
+            #{owner},
+            #{name},
+            #{startDate},
+            #{endDate},
+            #{cost},
+            #{description},
+            #{createTime},
+            #{createBy}
+
+
+        )
+    </insert>
+    <select id="getActivityListByCondition" parameterType="map" resultType="com.zheng.crm.settings.domain.Activity">
+        select
+
+        a.id,
+        a.name,
+        u.name as owner,
+        a.startDate,
+        a.endDate
+
+        from tbl_activity a
+        join tbl_user u
+        on a.owner=u.id
+
+        <where>
+            <if test="activity!=null">
+                <if test='activity.name!= null and activity.name!=""'>
+
+                    a.name like '%' #{activity.name} '%'
+
+                </if>
+
+                <if test='activity.owner!= null and activity.owner!=""'>
+
+                    and u.name like '%' #{activity.owner} '%'
+
+                </if>
+
+                <if test='activity.startDate!= null and activity.startDate!=""'>
+
+                    and a.startDate &gt; #{activity.startDate}
+
+                </if>
+
+                <if test='activity.endDate!= null and activity.endDate!=""'>
+
+                    and a.endDate &lt; #{activity.endDate}
+
+                </if>
+            </if>
+
+        </where>
+
+        order by a.createTime desc
+
+        limit #{skipCount},#{pageSizes}
+
+
+    </select>
+    <select id="getTotalByCondition" resultType="int">
+        select count(*)
+        from
+        tbl_activity a
+        join
+        tbl_user u
+        on a.owner=u.id
+        <where>
+            <if test="activity!=null">
+                <if test='activity.name!= null and activity.name!=""'>
+
+                    a.name like '%' #{activity.name} '%'
+
+                </if>
+
+                <if test='activity.owner!= null and activity.owner!=""'>
+
+                    and u.name like '%' #{activity.owner} '%'
+
+                </if>
+
+                <if test='activity.startDate!= null and activity.startDate!=""'>
+
+                    and a.startDate &gt; #{activity.startDate}
+
+                </if>
+
+                <if test='activity.endDate!= null and activity.endDate!=""'>
+
+                    and a.endDate &lt; #{activity.endDate}
+
+                </if>
+            </if>
+
+        </where>
+    </select>
+    <delete id="delete">
+        delete from tbl_activity where id in
+        <foreach collection="array" item="id" open="(" close=")" separator=",">
+            #{id}
+        </foreach>
+    </delete>
+    <select id="getById" resultType="com.zheng.crm.settings.domain.Activity">
+        select * from tbl_activity where id = #{id}
+    </select>
+    <update id="update">
+        update tbl_activity set
+        owner=#{owner},
+        name=#{name},
+        startDate=#{startDate},
+        endDate=#{endDate},
+        cost=#{cost},
+        description=#{description},
+        editTime=#{editTime},
+        editBy=#{editBy}
+        where id=#{id}
+    </update>
+    <select id="detail" resultType="com.zheng.crm.settings.domain.Activity">
+        select
+        a.id,
+        u.name as owner,
+        a.name,
+        a.startDate,
+        a.endDate,
+        a.cost,
+        a.description,
+        a.createTime,
+        a.createBy,
+        a.editTime,
+        a.editBy
+        from tbl_activity a
+        join tbl_user u
+        on a.owner=u.id
+        where a.id=#{id}
+    </select>
+</mapper>
